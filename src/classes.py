@@ -4,6 +4,8 @@ from abc import ABC, abstractmethod
 import psycopg2
 import requests
 
+from src.functions import presentation
+
 
 class APIVacancies(ABC):
     @abstractmethod
@@ -38,7 +40,7 @@ class DBManager:
                             (
                                 vacancy_id int primary key,
                                 vacancy_name varchar(100),
-                                city varchar(50),
+                                city varchar(60),
                                 salary_from float,
                                 salary_to float,
                                 salary_currency varchar(3),
@@ -50,7 +52,7 @@ class DBManager:
                                 responsibility text,
                                 contacts text,
                                 schedule varchar(20),
-                                professional_roles_name varchar(60),
+                                professional_roles_name varchar(100),
                                 experience varchar(20),
                                 employment varchar(20)
                             )""")
@@ -59,8 +61,9 @@ class DBManager:
     def fill_db(self, keyword):
         with psycopg2.connect(host=self.host, database=self.database, user=self.user, password=self.password) as conn:
             with conn.cursor() as cur:
+                cur.execute('truncate vacancies restart identity')
                 HH_api = HeadHunterAPI()
-                for page in range(20):
+                for page in range(2):
                     # try:
                     HH_api.get_vacancies(keyword, page)
                     # except requests.exceptions.ConnectTimeout:
@@ -119,6 +122,77 @@ class DBManager:
                                         (vacancy["address"]["raw"]
                                          , vacancy["id"]))
 
+    def get_companies_and_vacancies_count(self, count):
+        with psycopg2.connect(host=self.host, database=self.database, user=self.user, password=self.password) as conn:
+            with conn.cursor() as cur:
+                cur.execute(
+                    'select employer_name, count(*) from vacancies group by employer_name order by count(*) desc')
+                if count != '':
+                    rows = cur.fetchmany(int(count))
+                    for row in rows:
+                        print(' '.join(map(str, row)))
+                else:
+                    rows = cur.fetchall()
+                    for row in rows:
+                        print(' '.join(map(str, row)))
 
+    def get_all_vacancies(self, count):
+        with psycopg2.connect(host=self.host, database=self.database, user=self.user, password=self.password) as conn:
+            with conn.cursor() as cur:
+                cur.execute(
+                    'select vacancy_name, employer_name, salary_from, salary_to, salary_currency, url from vacancies')
+                if count != '':
+                    rows = cur.fetchmany(int(count))
+                    presentation(rows)
+                else:
+                    rows = cur.fetchall()
+                    presentation(rows)
 
+    def get_avg_salary(self):
+        with psycopg2.connect(host=self.host, database=self.database, user=self.user, password=self.password) as conn:
+            with conn.cursor() as cur:
+                cur.execute('select round(((avg(salary_from)+avg(salary_to))/2)::numeric, 2) as sus, '
+                            'salary_currency from vacancies where salary_currency is not null group by salary_currency')
+                rows = cur.fetchall()
+                for row in rows:
+                    if row[0] is not None:
+                        print(' '.join(map(str, row)))
 
+    def get_vacancies_with_higher_salary(self, count):
+        with psycopg2.connect(host=self.host, database=self.database, user=self.user, password=self.password) as conn:
+            with conn.cursor() as cur:
+                cur.execute(
+                    'select vacancy_name, employer_name, salary_from, salary_to, salary_currency, url '
+                    'from vacancies '
+                    'join(select round(((avg(salary_from)+avg(salary_to))/2)::numeric, 2) as avg_salary, '
+                    'avg(salary_from) as avg_salary_from, avg(salary_to) as avg_salary_to, salary_currency '
+                    'from vacancies where salary_currency is not null group by salary_currency)'
+                    'using (salary_currency) where (salary_from > avg_salary_from and salary_to is null) '
+                    'or (salary_from is null and salary_to > avg_salary_to) or (salary_from+salary_to)/2>avg_salary')
+                if count != '':
+                    rows = cur.fetchmany(int(count))
+                    presentation(rows)
+                else:
+                    rows = cur.fetchall()
+                    presentation(rows)
+
+    def get_vacancies_with_keyword(self, keyword, count):
+        with psycopg2.connect(host=self.host, database=self.database, user=self.user, password=self.password) as conn:
+            with conn.cursor() as cur:
+                cur.execute(
+                    "select vacancy_name, employer_name, salary_from, salary_to, salary_currency, url "
+                    "from vacancies "
+                    "where lower(vacancy_name) like '%"+keyword+"%'"
+                )
+                if count != '':
+                    rows = cur.fetchmany(int(count))
+                    if rows:
+                        presentation(rows)
+                    else:
+                        print("По вашему запросу ничего не найдено.")
+                else:
+                    rows = cur.fetchall()
+                    if rows:
+                        presentation(rows)
+                    else:
+                        print("По вашему запросу ничего не найдено.")
