@@ -32,26 +32,3 @@ def test_presentation(rows):
                                     Не указана
                                     Ссылка на вакансию https://hh.ru/vacancy/98383317
                                     ''')
-
-
-'''
-Junior Software Engineer (Начинающий специалист)
-Magis Corp
-500 - 800 USD
-Ссылка на вакансию https://hh.ru/vacancy/98427645
-
-Back End разработчик
-ROBOUP
-3000000.0 - 4500000.0 UZS
-Ссылка на вакансию https://hh.ru/vacancy/98654688
-
-Разработчик Python Junior (Backend)
-Казтелепорт, АО
-Не указана
-Ссылка на вакансию https://hh.ru/vacancy/98383317
-
-Стажер-программист
-Технологии пользовательских интерфейсов
-От 2500 BYR
-Ссылка на вакансию https://hh.ru/vacancy/98346328
-'''
