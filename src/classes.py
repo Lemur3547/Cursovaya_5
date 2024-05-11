@@ -25,11 +25,11 @@ class HeadHunterAPI(APIVacancies):
 
 
 class DBManager:
-    def __init__(self, host, database, user, password):
-        self.host = host
-        self.database = database
-        self.user = user
-        self.password = password
+    def __init__(self, params):
+        self.host = params['host']
+        self.database = params['database']
+        self.user = params['user']
+        self.password = params['password']
 
     def create_tables(self):
         with psycopg2.connect(host=self.host, database=self.database, user=self.user, password=self.password) as conn:

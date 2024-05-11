@@ -1,3 +1,11 @@
+def set_config(file):
+    file.write('[postgresql]\n')
+    file.write('host=' + input('Введите хост ') + '\n')
+    file.write('database=' + input('Введите название базы данных ') + '\n')
+    file.write('user=' + input('Введите имя пользователя ') + '\n')
+    file.write('password=' + input('Введите пароль ') + '\n')
+
+
 def presentation(rows):
     for row in rows:
         print(row[0])
