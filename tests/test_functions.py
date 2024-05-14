@@ -1,6 +1,9 @@
+import builtins
+from unittest import mock
+
 import pytest
 
-from src.functions import presentation
+from src.functions import presentation, set_config
 
 
 @pytest.fixture()
@@ -32,3 +35,17 @@ def test_presentation(rows):
                                     Не указана
                                     Ссылка на вакансию https://hh.ru/vacancy/98383317
                                     ''')
+
+
+def test_set_config():
+    with open('test_database.ini', 'wt') as file:
+        with mock.patch.object(builtins, 'input', lambda _: '1234'):
+            set_config(file)
+
+    with open('test_database.ini', 'rt') as file:
+        assert file.read() == '''[postgresql]
+host=1234
+database=1234
+user=1234
+password=1234
+'''
