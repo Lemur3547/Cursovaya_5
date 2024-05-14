@@ -63,7 +63,7 @@ class DBManager:
             with conn.cursor() as cur:
                 cur.execute('truncate vacancies restart identity')
                 HH_api = HeadHunterAPI()
-                for page in range(2):
+                for page in range(20):
                     # try:
                     HH_api.get_vacancies(keyword, page)
                     # except requests.exceptions.ConnectTimeout:
