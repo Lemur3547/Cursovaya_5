@@ -1,15 +1,18 @@
 from src.classes import DBManager
+from src.config import config
+from src.functions import set_config
 
-with open('data/settings.txt', 'r+') as file:
-    settings = file.read()
-    if settings == '':
-        file.write(input('Введите хост '))
-        file.write('\n')
-        file.write(input('Введите название базы данных '))
-        file.write('\n')
-        file.write(input('Введите имя пользователя '))
-        file.write('\n')
-        file.write(input('Введите пароль '))
+try:
+    with open('data/database.ini', 'r+') as file:
+        settings = file.read()
+        if settings == '':
+            set_config(file)
+except IOError:
+    with open('data/database.ini', 'w+') as file:
+        set_config(file)
+
+
+
 
 while True:
     print('''\nЧто вы хотите сделать?
@@ -19,13 +22,17 @@ while True:
     case = input()
     if case == '1':
         print('Подключение...')
-        with open('data/settings.txt', 'r') as file:
-            settings = file.read().split('\n')
-        database = DBManager(settings[0], settings[1], settings[2], settings[3])
-        database.create_tables()
-        print("Соединение установлено.")
+        params = config('data/database.ini')
+        try:
+            database = DBManager(params)
+            database.create_tables()
+            is_connected = True
+            print("Соединение установлено.")
+        except UnicodeDecodeError:
+            print("Ошибка при подключении к базе данных. Проверьте параметры подключения.")
+            is_connected = False
 
-        while True:
+        while is_connected:
             search = input("Введите ключевые слова для поиска ")
             print("Получение данных...")
             database.fill_db(search)
@@ -68,21 +75,15 @@ while True:
         if case == 'exit':
             print('Выход...')
             break
+
     elif case == '2':
-        with open('data/settings.txt', 'w') as file:
-            file.write(input('Введите хост '))
-            file.write('\n')
-            file.write(input('Введите название базы данных '))
-            file.write('\n')
-            file.write(input('Введите имя пользователя '))
-            file.write('\n')
-            file.write(input('Введите пароль '))
+        with open('data/database.ini', 'w') as file:
+            set_config(file)
         print("Данные обновлены.")
+
     elif case == 'exit':
         print('Выход...')
         break
+
     else:
         print('Неизвестная операция')
-
-
-
