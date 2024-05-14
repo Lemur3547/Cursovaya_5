@@ -8,16 +8,28 @@ from src.functions import presentation
 
 
 class APIVacancies(ABC):
+    """
+    Абстрактный класс для API вакансий
+    """
     @abstractmethod
     def get_vacancies(self, name, page):
         pass
 
 
 class HeadHunterAPI(APIVacancies):
+    """
+    Класс для работы с API HeadHunter
+    """
     def __init__(self):
         self.hh_api = 'https://api.hh.ru/vacancies'
 
     def get_vacancies(self, name, page):
+        """
+        Метод для получения вакансий
+        :param name: Ключевое слово для поиска
+        :param page: Номер страницы
+        :return: записывает данные в json файл
+        """
         response = requests.get(self.hh_api, params={'text': name, 'per_page': 100, 'page': page})
         vacancies = response.json()
         with open('data/vacancies.json', 'wt', encoding='utf-8') as file:
@@ -25,6 +37,9 @@ class HeadHunterAPI(APIVacancies):
 
 
 class DBManager:
+    """
+    Класс для работы с базами данных
+    """
     def __init__(self, params):
         self.host = params['host']
         self.database = params['database']
@@ -32,6 +47,9 @@ class DBManager:
         self.password = params['password']
 
     def create_tables(self):
+        """
+        Метод для создания таблицы для хранения данных
+        """
         with psycopg2.connect(host=self.host, database=self.database, user=self.user, password=self.password) as conn:
             with conn.cursor() as cur:
                 cur.execute('drop table if exists vacancies')
@@ -59,6 +77,10 @@ class DBManager:
         conn.close()
 
     def fill_db(self, keyword):
+        """
+        Метод для заполнения базы данных данными о вакансиях
+        :param keyword: Ключевое слово для поиска вакансий
+        """
         with psycopg2.connect(host=self.host, database=self.database, user=self.user, password=self.password) as conn:
             with conn.cursor() as cur:
                 cur.execute('truncate vacancies restart identity')
@@ -123,6 +145,10 @@ class DBManager:
                                          , vacancy["id"]))
 
     def get_companies_and_vacancies_count(self, count):
+        """
+        Метод для получения списка компаний и количества вакансий у каждой из них
+        :param count: Количество вакансий. Может быть пустым
+        """
         with psycopg2.connect(host=self.host, database=self.database, user=self.user, password=self.password) as conn:
             with conn.cursor() as cur:
                 cur.execute(
@@ -137,6 +163,10 @@ class DBManager:
                         print(' '.join(map(str, row)))
 
     def get_all_vacancies(self, count):
+        """
+        Метод для получения списка всех или нескольких вакансий
+        :param count: Количество вакансий. Может быть пустым
+        """
         with psycopg2.connect(host=self.host, database=self.database, user=self.user, password=self.password) as conn:
             with conn.cursor() as cur:
                 cur.execute(
@@ -149,6 +179,9 @@ class DBManager:
                     presentation(rows)
 
     def get_avg_salary(self):
+        """
+        Метод для получения средней зарплаты по всем вакансиям и валютам
+        """
         with psycopg2.connect(host=self.host, database=self.database, user=self.user, password=self.password) as conn:
             with conn.cursor() as cur:
                 cur.execute('select round(((avg(salary_from)+avg(salary_to))/2)::numeric, 2) as sus, '
@@ -159,6 +192,10 @@ class DBManager:
                         print(' '.join(map(str, row)))
 
     def get_vacancies_with_higher_salary(self, count):
+        """
+        Метод для получения списка всех или нескольких вакансий с зарплатой выше средней
+        :param count: Количество вакансий. Может быть пустым
+        """
         with psycopg2.connect(host=self.host, database=self.database, user=self.user, password=self.password) as conn:
             with conn.cursor() as cur:
                 cur.execute(
@@ -177,6 +214,11 @@ class DBManager:
                     presentation(rows)
 
     def get_vacancies_with_keyword(self, keyword, count):
+        """
+        Метод для Метод для получения списка всех или нескольких вакансий с ключевым словом в названии
+        :param keyword: Ключевое слово для поиска
+        :param count: Количество вакансий. Может быть пустым
+        """
         with psycopg2.connect(host=self.host, database=self.database, user=self.user, password=self.password) as conn:
             with conn.cursor() as cur:
                 cur.execute(

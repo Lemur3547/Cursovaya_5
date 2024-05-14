@@ -1,4 +1,8 @@
 def set_config(file):
+    """
+    Функция для заполнения файла конфига данными
+    :param file: Файл для записи
+    """
     file.write('[postgresql]\n')
     file.write('host=' + input('Введите хост ') + '\n')
     file.write('database=' + input('Введите название базы данных ') + '\n')
@@ -7,6 +11,10 @@ def set_config(file):
 
 
 def presentation(rows):
+    """
+    Функция для вывода информации о вакансиях в консоль в удобном для восприятия виде
+    :param rows: список вакансий
+    """
     for row in rows:
         print(row[0])
         print(row[1])

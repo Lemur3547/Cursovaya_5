@@ -3,18 +3,19 @@ from src.config import config
 from src.functions import set_config
 
 try:
+    # Открытие и чтение файла конфига если он существует
     with open('data/database.ini', 'r+') as file:
         settings = file.read()
         if settings == '':
             set_config(file)
 except IOError:
+    # Создание и запись данных в конфиг при его отсутствии
     with open('data/database.ini', 'w+') as file:
         set_config(file)
 
-
-
-
 while True:
+    # Основной код приложения
+    # Пользовательский интерфейс
     print('''\nЧто вы хотите сделать?
 1. Подключиться к базе данных
 2. Изменить параметры подключения
@@ -24,20 +25,25 @@ while True:
         print('Подключение...')
         params = config('data/database.ini')
         try:
+            # Попытка подключения к базе данных
             database = DBManager(params)
             database.create_tables()
             is_connected = True
             print("Соединение установлено.")
         except UnicodeDecodeError:
+            # Обработка ошибки подключения и возврат в меню
             print("Ошибка при подключении к базе данных. Проверьте параметры подключения.")
             is_connected = False
 
         while is_connected:
+            # Поиск вакансий
             search = input("Введите ключевые слова для поиска ")
             print("Получение данных...")
             database.fill_db(search)
             print("Данные получены.")
+
             while True:
+                # Меню действий с полученными вакансиями
                 print('1. Получить список компаний с количеством вакансий\n'
                       '2. Получить список вакансий\n'
                       '3. Получить среднюю зарплату по вакансиям\n'
@@ -77,11 +83,13 @@ while True:
             break
 
     elif case == '2':
+        # Обновление данных конфига
         with open('data/database.ini', 'w') as file:
             set_config(file)
         print("Данные обновлены.")
 
     elif case == 'exit':
+        # Выход из программы
         print('Выход...')
         break
 
